@@ -66,7 +66,9 @@
             ranges: {
              "Today": [dateStr(), dateStr()],
              "Last 7 Days": [dateStr(6), dateStr()],
-             "Last 30 Days": [dateStr(29), dateStr()]
+             "Last 30 Days": [dateStr(29), dateStr()],
+             "Last 3 Months": ['<%= I18n.l 3.months.ago.to_date %>', dateStr()],
+             "Last Year": ['<%= I18n.l 1.year.ago.to_date %>', dateStr()]
             },
             locale: {
               format: format

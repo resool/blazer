@@ -1,6 +1,6 @@
 module Blazer
   class Result
-    attr_reader :data_source, :columns, :rows, :error, :cached_at, :just_cached
+    attr_reader :data_source, :columns, :rows, :error, :cached_at, :just_cached, :options
 
     def initialize(data_source, columns, rows, error, cached_at, just_cached)
       @data_source = data_source
@@ -9,6 +9,7 @@ module Blazer
       @error = error
       @cached_at = cached_at
       @just_cached = just_cached
+      set_config if has_config?
     end
 
     def timed_out?
@@ -64,7 +65,7 @@ module Blazer
     end
 
     def chart_type
-      @chart_type ||= begin
+      @chart_type ||= @options[:chart_type] || begin
         if column_types.compact.size >= 2 && column_types.compact == ["time"] + (column_types.compact.size - 1).times.map { "numeric" }
           "line"
         elsif column_types == ["string", "numeric"]
@@ -166,6 +167,36 @@ module Blazer
           timestamps << row["index"].to_i
         end
         timestamps.include?(series.length)
+      end
+    end
+
+    private
+
+    def has_config?
+      columns.any? { |c| c.starts_with? '_blazer_' }
+    end
+
+    def option_names
+      columns.map { |c| c if c.starts_with? '_blazer_' }.compact
+    end
+
+    def set_config
+      rows_to_remove = []
+      @options = option_names.reduce({}) do |hash, or_name|
+        index = columns.index(or_name)
+        rows_to_remove << index
+        name = or_name.split('_blazer_').last.to_sym
+        value = rows.first[index]
+        hash.merge(name => value)
+      end
+      remove_rows(rows_to_remove)
+    end
+
+    def remove_rows(indexes)
+      indexes.each { |i| columns.delete_at(i) }
+      @rows = rows.map do |row|
+        indexes.each { |i| row.delete_at(i) }
+        row
       end
     end
   end

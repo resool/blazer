@@ -193,6 +193,7 @@ module Blazer
     end
 
     def remove_rows(indexes)
+      indexes.sort!.reverse!
       indexes.each { |i| columns.delete_at(i) }
       @rows = rows.map do |row|
         indexes.each { |i| row.delete_at(i) }

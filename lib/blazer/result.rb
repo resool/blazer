@@ -9,7 +9,9 @@ module Blazer
       @error = error
       @cached_at = cached_at
       @just_cached = just_cached
+      @options = {}
       set_config if has_config?
+      humanize_columns
     end
 
     def timed_out?
@@ -173,7 +175,7 @@ module Blazer
     private
 
     def has_config?
-      columns.any? { |c| c.starts_with? '_blazer_' }
+      rows.present? && columns.any? { |c| c.starts_with? '_blazer_' }
     end
 
     def option_names
@@ -199,6 +201,10 @@ module Blazer
         indexes.each { |i| row.delete_at(i) }
         row
       end
+    end
+
+    def humanize_columns
+      @columns = columns.map(&:humanize)
     end
   end
 end
